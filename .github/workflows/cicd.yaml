@@ -61,7 +61,7 @@ jobs:
           test -f dist/index.html
           echo "Build file exists!"
 
-  deploy-to-azure:
+  # deploy-to-azure:
     runs-on: ubuntu-latest
     needs: test
 
@@ -112,3 +112,24 @@ jobs:
           registryPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
           ingress: external
           targetPort: 80
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: react-app-build
+          path: dist
+
+      - name: Deploy to Azure Static Web Apps
+        uses: azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          output_location: "dist"
